@@ -1,7 +1,19 @@
+# Other
+
+PLAN.md
+CHAT.md
+checkpoints
+*raw
+*processed
+*raw
+*model_cache
+*results
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
 *$py.class
+.venv
 
 # C extensions
 *.so
