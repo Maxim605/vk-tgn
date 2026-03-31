@@ -1,6 +1,5 @@
 """
 Central configuration for the learner pipeline.
-All constants, paths, and hyperparameters live here.
 """
 
 from pathlib import Path
@@ -20,11 +19,11 @@ ARANGO_USER = "root"
 ARANGO_PASS = "test"
 
 # ── Graph / task ──────────────────────────────────────────────────────────────
-FOF_SEED = "577933229"   # seed user for friends-of-friends subgraph
+FOF_SEED = "577933229"
 
 # ── Temporal split fractions ──────────────────────────────────────────────────
 TRAIN_FRAC = 0.70
-VAL_FRAC   = 0.85   # 0.70..0.85 = val, 0.85..1.0 = test
+VAL_FRAC   = 0.85
 
 # ── Model hyperparameters ─────────────────────────────────────────────────────
 MEM_DIM    = 100
@@ -43,5 +42,66 @@ BERT_MAXLEN = 128
 
 # ── Misc ──────────────────────────────────────────────────────────────────────
 SEED       = 42
-WINDOW_SEC = 7 * 24 * 3600   # 7-day window for popularity features
-DECAY_HALF = 3 * 24 * 3600   # half-life for recency decay
+WINDOW_SEC = 7 * 24 * 3600
+DECAY_HALF = 3 * 24 * 3600
+
+# ── Multi-task head weights ───────────────────────────────────────────────────
+HEAD_WEIGHTS = {
+    "recipient": 1.0,
+    "time":      0.1,
+    "action":    0.5,
+    "text":      0.1,
+}
+TIME_BINS     = 32
+TEXT_PROJ_DIM = 256
+
+# ── Benchmark difficulty modes ────────────────────────────────────────────────
+# easy:      1 random negative, standard chronological split
+# medium:    20 negatives (random), standard split
+# hard:      100 negatives (random + structural + temporal), standard split
+# inductive: hard negatives + inductive split (new users/pairs in test)
+BENCHMARK_MODES = {
+    "easy": {
+        "n_neg":           1,
+        "neg_types":       ["random"],
+        "split":           "chronological",
+        "inductive_frac":  0.0,
+        "cold_edge_frac":  0.0,
+    },
+    "medium": {
+        "n_neg":           20,
+        "neg_types":       ["random"],
+        "split":           "chronological",
+        "inductive_frac":  0.0,
+        "cold_edge_frac":  0.0,
+    },
+    "hard": {
+        "n_neg":           20,                              # было 100, снижено для скорости
+        "neg_types":       ["random", "structural"],        # temporal убран (медленный)
+        "split":           "chronological",
+        "inductive_frac":  0.0,
+        "cold_edge_frac":  0.2,
+    },
+    "hard100": {
+        "n_neg":           100,
+        "neg_types":       ["random", "structural", "temporal"],
+        "split":           "chronological",
+        "inductive_frac":  0.0,
+        "cold_edge_frac":  0.2,
+    },
+    "inductive": {
+        "n_neg":           100,
+        "neg_types":       ["random", "structural", "temporal"],
+        "split":           "inductive",
+        "inductive_frac":  0.2,   # 20% test users are new (unseen in train)
+        "cold_edge_frac":  0.3,
+    },
+}
+
+# Ablation head sets
+ABLATION_HEADS = {
+    "structure":              "recipient",
+    "structure+time":         "recipient+time",
+    "structure+time+text":    "recipient+time+text",
+    "structure+time+text+action": "recipient+time+action+text",
+}
